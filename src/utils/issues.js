@@ -1,4 +1,5 @@
-import { strHasQuotes } from "./utils";
+import i18n from "../i18n/i18n";
+import { isFunction, strHasQuotes } from "./utils";
 
 function validateDateStr(str) {
   return /^(?!0000)(?!00)(?:(?!0000)[0-9]{4}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-9]|3[01])|(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31))$/.test(
@@ -9,13 +10,23 @@ function validateDateStr(str) {
 function checkDefault(field) {
   if (field.default === "") return true;
 
+  if (isFunction(field.default)) return true;
+
+  if (!field.notNull && field.default.toLowerCase() === "null") return true;
+
   switch (field.type) {
     case "INT":
     case "BIGINT":
     case "SMALLINT":
       return /^-?\d*$/.test(field.default);
+    case "SET": {
+      const defaultValues = field.default.split(",");
+      for (let i = 0; i < defaultValues.length; i++) {
+        if (!field.values.includes(defaultValues[i].trim())) return false;
+      }
+      return true;
+    }
     case "ENUM":
-    case "SET":
       return field.values.includes(field.default);
     case "CHAR":
     case "VARCHAR":
@@ -30,7 +41,8 @@ function checkDefault(field) {
       );
     case "BOOLEAN":
       return (
-        field.default.trim() === "false" || field.default.trim() === "true"
+        field.default.trim().toLowerCase() === "false" ||
+        field.default.trim().toLowerCase() === "true"
       );
     case "FLOAT":
     case "DECIMAL":
@@ -55,6 +67,9 @@ function checkDefault(field) {
       return parseInt(date[0]) >= 1970 && parseInt(date[0]) <= 2038;
     }
     case "DATETIME": {
+      if (field.default.toUpperCase() === "CURRENT_TIMESTAMP") {
+        return true;
+      }
       if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(field.default)) {
         return false;
       }
@@ -74,11 +89,11 @@ export function getIssues(diagram) {
 
   diagram.tables.forEach((table) => {
     if (table.name === "") {
-      issues.push(`Declared a table with no name`);
+      issues.push(i18n.t("table_w_no_name"));
     }
 
     if (duplicateTableNames[table.name]) {
-      issues.push(`Duplicate table by the name "${table.name}"`);
+      issues.push(i18n.t("duplicate_table_by_name", { tableName: table.name }));
     } else {
       duplicateTableNames[table.name] = true;
     }
@@ -91,39 +106,48 @@ export function getIssues(diagram) {
         hasPrimaryKey = true;
       }
       if (field.name === "") {
-        issues.push(`Empty field name in table "${table.name}"`);
+        issues.push(i18n.t("empty_field_name", { tableName: table.name }));
       }
 
       if (field.type === "") {
-        issues.push(`Empty field type in table "${table.name}"`);
+        issues.push(i18n.t("empty_field_type", { tableName: table.name }));
       } else if (field.type === "ENUM" || field.type === "SET") {
         if (!field.values || field.values.length === 0) {
           issues.push(
-            `"${field.name}" field of table "${table.name}" is of type ${field.type} but no values have been specified`,
+            i18n.t("no_values_for_field", {
+              tableName: table.name,
+              fieldName: field.name,
+              type: field.type,
+            }),
           );
         }
       }
 
       if (!checkDefault(field)) {
         issues.push(
-          `Default value for field "${field.name}" in table "${table.name}" does not match its type.`,
+          i18n.t("default_doesnt_match_type", {
+            tableName: table.name,
+            fieldName: field.name,
+          }),
         );
       }
 
       if (field.notNull && field.default.toLowerCase() === "null") {
         issues.push(
-          `"${field.name}" field of table "${table.name}" is NOT NULL but has default NULL`,
-        );
-      }
-
-      if (field.type === "DOUBLE" && field.size !== "") {
-        issues.push(
-          `Specifying number of digits for floating point data types is deprecated.`,
+          i18n.t("not_null_is_null", {
+            tableName: table.name,
+            fieldName: field.name,
+          }),
         );
       }
 
       if (duplicateFieldNames[field.name]) {
-        issues.push(`Duplicate table fields in table "${table.name}"`);
+        issues.push(
+          i18n.t("duplicate_fields", {
+            tableName: table.name,
+            fieldName: field.name,
+          }),
+        );
       } else {
         duplicateFieldNames[field.name] = true;
       }
@@ -132,7 +156,12 @@ export function getIssues(diagram) {
     const duplicateIndices = {};
     table.indices.forEach((index) => {
       if (duplicateIndices[index.name]) {
-        issues.push(`Duplicate index by the name "${index.name}"`);
+        issues.push(
+          i18n.t("duplicate_index", {
+            tableName: table.name,
+            indexName: index.name,
+          }),
+        );
       } else {
         duplicateIndices[index.name] = true;
       }
@@ -140,56 +169,69 @@ export function getIssues(diagram) {
 
     table.indices.forEach((index) => {
       if (index.fields.length === 0) {
-        issues.push(`Empty index type in table "${table.name}"`);
+        issues.push(
+          i18n.t("empty_index", {
+            tableName: table.name,
+          }),
+        );
       }
     });
 
     if (!hasPrimaryKey) {
-      issues.push(`Table "${table.name}" has no primary key`);
+      issues.push(i18n.t("no_primary_key", { tableName: table.name }));
     }
   });
 
   const duplicateTypeNames = {};
   diagram.types.forEach((type) => {
     if (type.name === "") {
-      issues.push(`Declared a type with no name`);
+      issues.push(i18n.t("type_with_no_name"));
     }
 
     if (duplicateTypeNames[type.name]) {
-      issues.push(`Duplicate types by the name "${type.name}"`);
+      issues.push(i18n.t("duplicate_types", { typeName: type.name }));
     } else {
       duplicateTypeNames[type.name] = true;
     }
 
     if (type.fields.length === 0) {
-      issues.push(`Declared an empty type "${type.name}" with no fields`);
+      issues.push(i18n.t("type_w_no_fields", { typeName: type.name }));
       return;
     }
 
     const duplicateFieldNames = {};
     type.fields.forEach((field) => {
       if (field.name === "") {
-        issues.push(`Empty field name in type "${type.name}"`);
+        issues.push(
+          i18n.t("empty_type_field_name", {
+            typeName: type.name,
+          }),
+        );
       }
 
       if (field.type === "") {
-        issues.push(`Empty field type in "${type.name}"`);
+        issues.push(
+          i18n.t("empty_type_field_type", {
+            typeName: type.name,
+          }),
+        );
       } else if (field.type === "ENUM" || field.type === "SET") {
         if (!field.values || field.values.length === 0) {
           issues.push(
-            `"${field.name}" field of type "${type.name}" is of type ${field.type} but no values have been specified`,
+            i18n.t("no_values_for_type_field", {
+              typeName: type.name,
+              fieldName: field.name,
+              type: field.type,
+            }),
           );
         }
       }
 
-      if (field.type === "DOUBLE" && field.size !== "") {
-        issues.push(
-          `Specifying number of digits for floating point data types is deprecated.`,
-        );
-      }
-
       if (duplicateFieldNames[field.name]) {
-        issues.push(`Duplicate type fields in "${type.name}"`);
+        i18n.t("duplicate_type_fields", {
+          typeName: type.name,
+          fieldName: field.name,
+        });
       } else {
         duplicateFieldNames[field.name] = true;
       }
@@ -199,21 +241,13 @@ export function getIssues(diagram) {
   const duplicateFKName = {};
   diagram.relationships.forEach((r) => {
     if (duplicateFKName[r.name]) {
-      issues.push(`Duplicate reference by the name "${r.name}"`);
+      issues.push(
+        i18n.t("duplicate_reference", {
+          refName: r.name,
+        }),
+      );
     } else {
       duplicateFKName[r.name] = true;
-    }
-
-    if (
-      diagram.tables[r.startTableId].fields[r.startFieldId].type !==
-      diagram.tables[r.endTableId].fields[r.endFieldId].type
-    ) {
-      issues.push(`Referencing column "${
-        diagram.tables[r.endTableId].fields[r.endFieldId].name
-      }" and referenced column "${
-        diagram.tables[r.startTableId].fields[r.startFieldId].name
-      }" are incompatible.
-        `);
     }
   });
 
@@ -222,7 +256,9 @@ export function getIssues(diagram) {
   function checkCircularRelationships(tableId, visited = []) {
     if (visited.includes(tableId)) {
       issues.push(
-        `Circular relationship involving table: "${diagram.tables[tableId].name}"`,
+        i18n.t("circular_dependency", {
+          refName: diagram.tables[tableId].name,
+        }),
       );
       return;
     }

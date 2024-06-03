@@ -11,18 +11,21 @@ import { Action, ObjectType } from "../../../data/constants";
 import { IconDeleteStroked } from "@douyinfe/semi-icons";
 import { hasCheck, hasPrecision, isSized } from "../../../utils/toSQL";
 import { useTables, useUndoRedo } from "../../../hooks";
+import { useTranslation } from "react-i18next";
 
 export default function FieldDetails({ data, tid, index }) {
+  const { t } = useTranslation();
+  const { tables } = useTables();
   const { setUndoStack, setRedoStack } = useUndoRedo();
   const { updateField, deleteField } = useTables();
   const [editField, setEditField] = useState({});
 
   return (
     <div>
-      <div className="font-semibold">Default value</div>
+      <div className="font-semibold">{t("default_value")}</div>
       <Input
         className="my-2"
-        placeholder="Set default"
+        placeholder={t("default_value")}
         value={data.default}
         disabled={
           data.type === "BLOB" ||
@@ -45,7 +48,10 @@ export default function FieldDetails({ data, tid, index }) {
               fid: index,
               undo: editField,
               redo: { default: e.target.value },
-              message: `Edit table field default to ${e.target.value}`,
+              message: t("edit_table", {
+                tableName: tables[tid].name,
+                extra: "[field]",
+              }),
             },
           ]);
           setRedoStack([]);
@@ -53,15 +59,18 @@ export default function FieldDetails({ data, tid, index }) {
       />
       {(data.type === "ENUM" || data.type === "SET") && (
         <>
-          <div className="font-semibold mb-1">{data.type} values</div>
+          <div className="font-semibold mb-1">
+            {data.type} {t("values")}
+          </div>
           <TagInput
             separator={[",", ", ", " ,"]}
             value={data.values}
             validateStatus={
               !data.values || data.values.length === 0 ? "error" : "default"
             }
+            addOnBlur
             className="my-2"
-            placeholder="Use ',' for batch input"
+            placeholder={t("use_for_batch_input")}
             onChange={(v) => updateField(tid, index, { values: v })}
             onFocus={() => setEditField({ values: data.values })}
             onBlur={() => {
@@ -79,9 +88,10 @@ export default function FieldDetails({ data, tid, index }) {
                   fid: index,
                   undo: editField,
                   redo: { values: data.values },
-                  message: `Edit table field values to "${JSON.stringify(
-                    data.values
-                  )}"`,
+                  message: t("edit_table", {
+                    tableName: tables[tid].name,
+                    extra: "[field]",
+                  }),
                 },
               ]);
               setRedoStack([]);
@@ -91,7 +101,7 @@ export default function FieldDetails({ data, tid, index }) {
       )}
       {isSized(data.type) && (
         <>
-          <div className="font-semibold">Size</div>
+          <div className="font-semibold">{t("size")}</div>
           <InputNumber
             className="my-2 w-full"
             placeholder="Set length"
@@ -110,7 +120,10 @@ export default function FieldDetails({ data, tid, index }) {
                   fid: index,
                   undo: editField,
                   redo: { size: e.target.value },
-                  message: `Edit table field size to ${e.target.value}`,
+                  message: t("edit_table", {
+                    tableName: tables[tid].name,
+                    extra: "[field]",
+                  }),
                 },
               ]);
               setRedoStack([]);
@@ -120,12 +133,14 @@ export default function FieldDetails({ data, tid, index }) {
       )}
       {hasPrecision(data.type) && (
         <>
-          <div className="font-semibold">Precision</div>
+          <div className="font-semibold">{t("precision")}</div>
           <Input
             className="my-2 w-full"
-            placeholder="Set precision: (size, d)"
+            placeholder={t("set_precision")}
             validateStatus={
-              /^\(\d+,\s*\d+\)$|^$/.test(data.size) ? "default" : "error"
+              !data.size || /^\d+,\s*\d+$|^$/.test(data.size)
+                ? "default"
+                : "error"
             }
             value={data.size}
             onChange={(value) => updateField(tid, index, { size: value })}
@@ -142,7 +157,10 @@ export default function FieldDetails({ data, tid, index }) {
                   fid: index,
                   undo: editField,
                   redo: { size: e.target.value },
-                  message: `Edit table field precision to ${e.target.value}`,
+                  message: t("edit_table", {
+                    tableName: tables[tid].name,
+                    extra: "[field]",
+                  }),
                 },
               ]);
               setRedoStack([]);
@@ -152,10 +170,10 @@ export default function FieldDetails({ data, tid, index }) {
       )}
       {hasCheck(data.type) && (
         <>
-          <div className="font-semibold">Check Expression</div>
+          <div className="font-semibold">{t("check")}</div>
           <Input
             className="mt-2"
-            placeholder="Set constraint"
+            placeholder={t("check")}
             value={data.check}
             disabled={data.increment}
             onChange={(value) => updateField(tid, index, { check: value })}
@@ -172,19 +190,20 @@ export default function FieldDetails({ data, tid, index }) {
                   fid: index,
                   undo: editField,
                   redo: { check: e.target.value },
-                  message: `Edit table field check expression to ${e.target.value}`,
+                  message: t("edit_table", {
+                    tableName: tables[tid].name,
+                    extra: "[field]",
+                  }),
                 },
               ]);
               setRedoStack([]);
             }}
           />
-          <div className="text-xs mt-1">
-            *This will appear in the script as is.
-          </div>
+          <div className="text-xs mt-1">{t("this_will_appear_as_is")}</div>
         </>
       )}
       <div className="flex justify-between items-center my-3">
-        <div className="font-medium">Unique</div>
+        <div className="font-medium">{t("unique")}</div>
         <Checkbox
           value="unique"
           checked={data.unique}
@@ -213,7 +232,7 @@ export default function FieldDetails({ data, tid, index }) {
         />
       </div>
       <div className="flex justify-between items-center my-3">
-        <div className="font-medium">Autoincrement</div>
+        <div className="font-medium">{t("autoincrement")}</div>
         <Checkbox
           value="increment"
           checked={data.increment}
@@ -239,9 +258,10 @@ export default function FieldDetails({ data, tid, index }) {
                 redo: {
                   [checkedValues.target.value]: checkedValues.target.checked,
                 },
-                message: `Edit table field to${
-                  data.increment ? " not" : ""
-                } auto increment`,
+                message: t("edit_table", {
+                  tableName: tables[tid].name,
+                  extra: "[field]",
+                }),
               },
             ]);
             setRedoStack([]);
@@ -252,10 +272,10 @@ export default function FieldDetails({ data, tid, index }) {
           }}
         />
       </div>
-      <div className="font-semibold">Comment</div>
+      <div className="font-semibold">{t("comment")}</div>
       <TextArea
         className="my-2"
-        placeholder="Add comment"
+        placeholder={t("comment")}
         value={data.comment}
         autosize
         rows={2}
@@ -273,7 +293,10 @@ export default function FieldDetails({ data, tid, index }) {
               fid: index,
               undo: editField,
               redo: { comment: e.target.value },
-              message: `Edit field comment to "${e.target.value}"`,
+              message: t("edit_table", {
+                tableName: tables[tid].name,
+                extra: "[field]",
+              }),
             },
           ]);
           setRedoStack([]);
@@ -285,7 +308,7 @@ export default function FieldDetails({ data, tid, index }) {
         block
         onClick={() => deleteField(data, tid)}
       >
-        Delete field
+        {t("delete")}
       </Button>
     </div>
   );

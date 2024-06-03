@@ -74,7 +74,7 @@ export default function LandingPage() {
           <div className="text-sm opacity-75 text-center">
             More coming soon...
           </div>
-          <div className="grid grid-cols-3 gap-8 mt-6 md:grid-cols-2 sm:grid-cols-1">
+          <div className="grid grid-cols-3 gap-8 mt-10 md:grid-cols-2 sm:grid-cols-1">
             {features.map((f, i) => (
               <div
                 key={i}
@@ -91,7 +91,7 @@ export default function LandingPage() {
           </div>
         </FadeIn>
       </div>
-      <div className="bg-zinc-100 py-10 px-32 md:px-8 rounded-t-[40px]">
+      <div className="bg-zinc-100 py-20 px-32 md:px-8 rounded-t-[40px]">
         <div className="text-center text-2xl font-bold mb-4">
           We support these DBMS
         </div>
