@@ -16,7 +16,7 @@ import FadeIn from "../animations/FadeIn";
 import SlideIn from "../animations/SlideIn";
 
 export default function LandingPage() {
-  const [showSurvey, setShowSurvey] = useState(true);
+  const [showSurvey, setShowSurvey] = useState(false);
 
   useEffect(() => {
     document.body.setAttribute("theme-mode", "light");
@@ -27,18 +27,6 @@ export default function LandingPage() {
   return (
     <div>
       <div className="flex flex-col h-screen">
-        {showSurvey && (
-          <div className="text-white font-semibold py-1.5 px-4 text-sm text-center bg-gradient-to-r from-slate-700 from-10% via-slate-500 to-slate-700">
-            <Link to="/survey" className="hover:underline">
-              Help us improve! Share your feedback.
-            </Link>
-            <div className="float-right">
-              <button onClick={() => setShowSurvey(false)}>
-                <IconCrossStroked size="small" />
-              </button>
-            </div>
-          </div>
-        )}
         <Navbar />
         <div className="flex-1 flex-col relative">
           <div className="h-full md:hidden">
@@ -58,7 +46,7 @@ export default function LandingPage() {
               </div>
             </FadeIn>
             <div className="mt-4 flex gap-4 justify-center font-semibold">
-              <button
+              {/* <button
                 className="bg-white shadow-lg px-9 py-2 rounded border border-zinc-200 hover:bg-zinc-100 transition-all duration-300"
                 onClick={() =>
                   document
@@ -67,84 +55,13 @@ export default function LandingPage() {
                 }
               >
                 Learn more
-              </button>
+              </button> */}
               <Link
                 to="/editor"
                 className="bg-slate-700 text-white px-4 py-2 rounded shadow-lg hover:bg-slate-600 transition-all duration-200"
               >
-                Try it for yourself
+                Start Now
               </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="learn-more">
-        <div className="bg-zinc-100 py-10 px-24 md:px-8 rounded-b-[40px]">
-          <FadeIn duration={1}>
-            <div className="text-2xl text-slate-900 font-bold text-center mb-5 md:hidden">
-              Entity-Relationship diagrams simplified
-            </div>
-            <div className="md:hidden">
-              <Steps type="basic" current={3}>
-                <Steps.Step
-                  title="Create tables"
-                  description="Define tables with the necessary fields and indices."
-                />
-                <Steps.Step
-                  title="Add relationships"
-                  description="Build relationships by simply dragging"
-                />
-                <Steps.Step
-                  title="Export"
-                  description="Export to your preferred SQL flavor"
-                />
-              </Steps>
-            </div>
-          </FadeIn>
-          <div className="mt-16 text-center w-[75%] sm:w-full mx-auto shadow-sm rounded-lg border px-12 py-8 bg-white">
-            <div className="text-2xl font-bold text-slate-900 mb-8">
-              Why drawDB?
-            </div>
-            <div className="grid grid-cols-3 gap-4 md:grid-cols-1 h-full">
-              <SlideIn delay={0} duration={0.4} className="h-full">
-                <div className="h-full border rounded-lg p-6 hover:bg-slate-100 transition-all duration-300">
-                  <span className="text-white bg-green-400 rounded-full py-2.5 px-3">
-                    <i className="fa-solid fa-credit-card"></i>
-                  </span>
-                  <div className="mt-6 text-lg font-semibold text-slate-700">
-                    Free
-                  </div>
-                  <div className="text-sm mt-3">
-                    drawDB is completely free of charge.
-                  </div>
-                </div>
-              </SlideIn>
-              <SlideIn delay={1 * 0.4} duration={0.4} className="h-full">
-                <div className="h-full border rounded-lg p-6 hover:bg-slate-100 transition-all duration-300">
-                  <span className="text-white bg-blue-400 rounded-full py-2.5 px-3">
-                    <i className="fa-solid fa-user-xmark"></i>
-                  </span>
-                  <div className="mt-6 text-lg font-semibold text-slate-700">
-                    No registration
-                  </div>
-                  <div className="text-sm mt-3">
-                    No need to sign up or login. Just jump into development.
-                  </div>
-                </div>
-              </SlideIn>
-              <SlideIn delay={2 * 0.4} duration={0.4} className="h-full">
-                <div className="h-full border rounded-lg p-6 hover:bg-slate-100 transition-all duration-300">
-                  <span className="text-white bg-emerald-400 rounded-full py-2.5 px-3">
-                    <i className="fa-regular fa-star "></i>
-                  </span>
-                  <div className="mt-6 text-lg font-semibold text-slate-700">
-                    Simple to use
-                  </div>
-                  <div className="text-sm mt-3">
-                    Intuitive design that&apos;s easy to navigate.
-                  </div>
-                </div>
-              </SlideIn>
             </div>
           </div>
         </div>
@@ -199,68 +116,6 @@ export default function LandingPage() {
             src={sql_server_icon}
             className="opacity-70 hover:opacity-100 transition-all duration-300 h-24"
           />
-        </div>
-        <div className="mt-16 mb-2 text-2xl font-bold text-center">
-          Reach out to us
-        </div>
-        <div className="text-lg text-center mb-4">
-          Your feedback is important to us. Share your thoughts and help us
-          improve.
-        </div>
-        <div className="px-36 text-center md:px-8">
-          <div className="w-full flex gap-8 sm:block">
-            <Link
-              to="/survey"
-              className="w-full flex items-center gap-2 font-semibold justify-center bg-white shadow-lg px-9 py-2 rounded border border-zinc-200 hover:bg-zinc-100 transition-all duration-300"
-            >
-              <div>Take a survey</div>
-              <i className="bi bi-arrow-right"></i>
-            </Link>
-            <Link
-              to="/bug-report"
-              className="sm:mt-2 w-full flex items-center gap-2 font-semibold justify-center bg-white shadow-lg px-9 py-2 rounded border border-zinc-200 hover:bg-zinc-100 transition-all duration-300"
-            >
-              <div>Report a bug</div>
-              <i className="bi bi-arrow-right"></i>
-            </Link>
-          </div>
-          <div className="mt-10">
-            Connect with us at
-            <a
-              href="mailto:drawdb@outlook.com"
-              className="text-blue-500 font-semibold hover:underline ms-1.5"
-            >
-              drawdb@outlook.com
-            </a>
-          </div>
-          <div className="sm:block flex gap-3 justify-center">
-            <a
-              className="inline-block mt-2"
-              href="https://github.com/drawdb-io/drawdb"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <div className="bg-zinc-800 hover:opacity-90 transition-all duration-300 flex items-center gap-4 px-14 py-4 rounded-lg">
-                <img src={github} className="h-8" />
-                <div className="text-lg text-white font-bold">
-                  See the source
-                </div>
-              </div>
-            </a>
-            <a
-              className="inline-block mt-2"
-              href="https://discord.gg/BrjZgNrmR6"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <div className="bg-[#5865f2] hover:opacity-90 transition-all duration-300 flex items-center gap-4 px-8 py-4 rounded-lg">
-                <img src={discord} className="h-8" />
-                <div className="text-lg text-white font-bold">
-                  Join us on Discord
-                </div>
-              </div>
-            </a>
-          </div>
         </div>
       </div>
       <div className="bg-red-700 py-1 text-center text-white text-xs font-semibold px-3">

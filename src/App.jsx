@@ -17,6 +17,14 @@ export default function App() {
         <RestoreScroll />
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          {/* <Route
+            path="/"
+            element={
+              <ThemedPage>
+                <Editor />
+              </ThemedPage>
+            }
+          /> */}
           <Route
             path="/editor"
             element={
